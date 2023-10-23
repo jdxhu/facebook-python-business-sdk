@@ -119,8 +119,24 @@ class TypeChecker:
         return collection_name == value_type[:len(collection_name)]
 
     def get_type_from_collection(self, value_type, collection_name):
-        return [s.strip() for s in
-                value_type[len(collection_name):].strip("<>").split(',')]
+        ret = []
+        sub_type = value_type[len(collection_name):]
+        if sub_type.startswith('<'):
+            sub_type = sub_type[1:-1]
+        else:
+            return ret
+        offset = 0
+        cut = 1
+        for i in range(len(sub_type)):
+            if sub_type[i] == '<':
+                cut = 0
+            elif sub_type[i] == '>':
+                cut = 1
+            elif sub_type[i] == ',' and cut:
+                ret.append(sub_type[offset:i].strip())
+                offset = i + 1
+        ret.append(sub_type[offset:i+1].strip())
+        return ret
 
     def is_list_param(self, param):
         if self.is_valid_key(param):
